@@ -1,0 +1,4 @@
+*.hdr binary
+*.jpg binary
+*.js text eol=lf
+*.html text eol=lf

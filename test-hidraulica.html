@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Prueba hidráulica</title>
+<pre id="o" style="font:12px monospace"></pre>
+<script type="module">
+import { solveHydraulics, GEOM } from './js/hydraulics.js';
+const o = document.getElementById('o');
+const rows = [];
+const t0 = performance.now();
+for (const H of [0.08, 0.15, 0.25, 0.32, 0.40, 0.55, 0.8, 1.2, 1.8, 2.5]) {
+  for (const th of [45]) {
+    const r = solveHydraulics(H, th * Math.PI / 180, 0.009);
+    rows.push([H, th, r.regime, (r.Q * 1000).toFixed(1), (r.QA * 1000).toFixed(1), (r.QB * 1000).toFixed(1),
+      r.sensor.f.toFixed(3), r.sensor.v.toFixed(2), r.sensor.Fr.toFixed(2), r.outlet.f.toFixed(3), r.outlet.v.toFixed(2), r.outlet.Fr.toFixed(2), r.choked].join('\t'));
+  }
+}
+const t1 = performance.now();
+const r = solveHydraulics(1.8, 15 * Math.PI / 180, 0.009);
+const r2 = solveHydraulics(1.8, 65 * Math.PI / 180, 0.013);
+const prof = [];
+const rr = solveHydraulics(0.3, Math.PI / 4, 0.009);
+for (let sv = 0; sv <= rr.path.total; sv += 0.5) prof.push(sv.toFixed(1) + ':' + rr.sample(sv, rr.f).toFixed(3));
+o.textContent = 'H\tth\treg\tQ\tQA\tQB\tfSens\tvSens\tFrSens\tfOut\tvOut\tFrOut\tchoked\n' + rows.join('\n') +
+  `\n\nms per solve: ${((t1 - t0) / 10).toFixed(1)}` +
+  `\nH1.8 th15: Q=${(r.Q*1000).toFixed(1)} fS=${r.sensor.f.toFixed(3)} fOut=${r.outlet.f.toFixed(3)} total=${r.path.total.toFixed(2)}` +
+  `\nH1.8 th65 n.013: Q=${(r2.Q*1000).toFixed(1)} fS=${r2.sensor.f.toFixed(3)} fOut=${r2.outlet.f.toFixed(3)}` +
+  `\nperfil H=0.3: ${prof.join('  ')}`;
+</script>

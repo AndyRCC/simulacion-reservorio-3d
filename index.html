@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fase 1 · Descarga de reservorio 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f14; --panel:rgba(12,17,24,.78); --line:rgba(255,255,255,.09); --txt:#e7edf3; --mut:#93a3b5;
+  --ok:#34d399; --bad:#f87171; --warn:#fbbf24; --acc:#38bdf8; --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:13px/1.45 Inter,system-ui,-apple-system,Segoe UI,sans-serif;overflow:hidden}
+#app{display:grid;grid-template-columns:1fr 392px;height:100vh}
+#view{position:relative;overflow:hidden;min-height:0}
+#view canvas{display:block;width:100%!important;height:100%!important}
+.labels{position:absolute;inset:0;pointer-events:none}
+aside{background:linear-gradient(180deg,#0e141b,#0a0e13);border-left:1px solid var(--line);overflow-y:auto;padding:14px 14px 24px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.card h3{margin:0 0 8px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.hud{position:absolute;left:16px;top:14px;right:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;pointer-events:none}
+.title{background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:12px;padding:10px 14px;max-width:640px;pointer-events:auto}
+.title .tag{display:inline-block;font:700 10px var(--mono);letter-spacing:.08em;color:#111;background:var(--warn);border-radius:4px;padding:2px 6px;margin-right:6px}
+.title h1{font-size:15px;margin:6px 0 2px;font-weight:700;letter-spacing:-.01em}
+.title p{margin:0;color:var(--mut);font-size:12px;display:none}
+@media (min-width: 1700px){ .title p{display:block} }
+.badge{font:700 11px var(--mono);padding:3px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.views{position:absolute;left:16px;bottom:14px;display:flex;gap:6px;flex-wrap:wrap}
+.views button,.seg button{font:600 12px Inter,sans-serif;color:var(--txt);background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:8px;padding:7px 11px;cursor:pointer}
+.views button:hover,.seg button:hover{border-color:var(--acc)}
+.views button.on,.seg button.on{background:var(--acc);color:#04131d;border-color:var(--acc)}
+.big{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:rgba(255,255,255,.02)}
+.kpi .k{font-size:11px;color:var(--mut)}
+.kpi .v{font:700 22px var(--mono);letter-spacing:-.02em}
+.kpi .s{font:500 11px var(--mono);color:var(--mut)}
+.kpi.real .v{color:var(--ok)} .kpi.meas .v{color:var(--bad)}
+.grid2{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center}
+.rows{display:grid;gap:3px;font:500 12px var(--mono)}
+.rows div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding:2px 0}
+.rows span:first-child{color:var(--mut);font-family:Inter,sans-serif}
+canvas.chart{width:100%;display:block;border-radius:8px;background:#070a0e;border:1px solid var(--line)}
+.ctl{display:grid;gap:10px}
+.ctl label{display:flex;justify-content:space-between;font-size:12px;color:var(--mut)}
+.ctl label b{font:700 12px var(--mono);color:var(--txt)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:#0c1117;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:500 12px Inter,sans-serif}
+.checks{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mut)}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;backdrop-filter:none;background:#0c1117}
+details summary{cursor:pointer;color:var(--acc);font-weight:600}
+details p,details li{color:#c7d2de;font-size:12.5px}
+details ul{padding-left:18px;margin:6px 0}
+.lbl{font:600 11px Inter,sans-serif;color:#fff;background:rgba(10,14,20,.82);border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:4px 7px;white-space:nowrap;transform:translateY(-22px);box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.lbl small{display:block;font:500 10px var(--mono);color:#b9c6d4}
+.lbl.bad{border-color:rgba(248,113,113,.7)} .lbl.bad small{color:#fca5a5}
+.lbl.warn{border-color:rgba(251,191,36,.7)}
+#loading{position:absolute;inset:0;display:grid;place-items:center;background:#0b0f14;z-index:5;font:600 13px var(--mono);color:var(--mut);transition:opacity .6s}
+.foot{font-size:11px;color:#6b7b8c}
+@media (max-width: 980px){
+  html,body{overflow:auto}
+  #app{grid-template-columns:1fr;height:auto}
+  #view{height:62vh}
+  aside{border-left:0;border-top:1px solid var(--line)}
+  .title h1{font-size:14px}
+  .title p{display:none}
+}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "./vendor/three.module.min.js",
+  "three/addons/controls/OrbitControls.js": "./vendor/OrbitControls.js",
+  "three/addons/loaders/RGBELoader.js": "./vendor/RGBELoader.js",
+  "three/addons/renderers/CSS2DRenderer.js": "./vendor/CSS2DRenderer.js"
+} }
+</script>
+</head>
+<body>
+<div id="app">
+  <section id="view">
+    <div id="loading">Cargando cielo HDRI y texturas…</div>
+    <div class="hud">
+      <div class="title">
+        <span class="tag">FASE 1 · DIAGNÓSTICO</span><span id="regBadge" class="badge" style="color:var(--warn)">—</span>
+        <h1>Descarga de reservorio con bajada a 45°: el caudalímetro no ve la tubería llena</h1>
+        <p>Hidráulica 1D real (energía + profundidad crítica) · Render PBR con iluminación HDRI · Tubería acrílica para ver el interior</p>
+      </div>
+      <span id="alarm" class="badge" style="color:var(--bad);background:rgba(40,8,8,.75);pointer-events:auto">—</span>
+    </div>
+    <div class="views" id="views">
+      <button data-v="general" class="on">Vista general</button>
+      <button data-v="sensor">Sensor (corte)</button>
+      <button data-v="codo">Codo y bajada</button>
+      <button data-v="lateral">Lateral</button>
+      <button data-v="reservorio">Reservorio</button>
+    </div>
+  </section>
+
+  <aside>
+    <div class="card">
+      <h3>Caudal <span id="stBadge" class="badge" style="color:var(--bad)">—</span></h3>
+      <div class="big">
+        <div class="kpi real"><div class="k">Caudal real (hidráulico)</div><div class="v" id="qReal">—</div><div class="s" id="qRealS">—</div></div>
+        <div class="kpi meas"><div class="k">Lectura del caudalímetro</div><div class="v" id="qMeas">—</div><div class="s" id="qErr">—</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Corte A–A en el sensor</h3>
+      <div class="grid2">
+        <canvas id="secCanvas" width="300" height="300" class="chart" style="aspect-ratio:1"></canvas>
+        <div class="rows">
+          <div><span>Llenado y/D</span><b id="rFill">—</b></div>
+          <div><span>Área mojada</span><b id="rArea">—</b></div>
+          <div><span>Velocidad</span><b id="rVel">—</b></div>
+          <div><span>Froude</span><b id="rFr">—</b></div>
+          <div><span>Electrodos E1/E2</span><b id="rEl">—</b></div>
+          <div><span>Electrodo EPD</span><b id="rEpd">—</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Registro (últimos 30 s) <span class="foot">verde: real · rojo: indicado</span></h3>
+      <canvas id="timeCanvas" width="720" height="220" class="chart" style="height:120px"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Perfil longitudinal del agua</h3>
+      <canvas id="profCanvas" width="720" height="250" class="chart" style="height:135px"></canvas>
+      <div class="foot" style="margin-top:6px" id="profNote">—</div>
+    </div>
+
+    <div class="card ctl">
+      <h3>Parámetros</h3>
+      <div><label>Nivel del reservorio sobre el fondo del tubo <b id="lH">—</b></label>
+        <input id="sH" type="range" min="0.06" max="2.6" step="0.01" value="1.6"></div>
+      <div><label>Ángulo de la bajada θ <b id="lT">—</b></label>
+        <input id="sT" type="range" min="15" max="65" step="1" value="45"></div>
+      <div><label>Material de la tubería (Manning n)</label>
+        <select id="sN">
+          <option value="0.009" selected>Acrílico / PVC (n = 0.009)</option>
+          <option value="0.011">HDPE (n = 0.011)</option>
+          <option value="0.012">Acero con revestimiento (n = 0.012)</option>
+          <option value="0.013">Concreto (n = 0.013)</option>
+        </select></div>
+      <div><label>Ajuste EPD del transmisor</label>
+        <div class="seg" id="epdSeg">
+          <button data-m="raw" class="on">EPD desactivado</button>
+          <button data-m="zero">EPD → salida 0</button>
+        </div></div>
+      <div class="checks">
+        <label><input type="checkbox" id="cLbl" checked> Etiquetas</label>
+        <label><input type="checkbox" id="cPart" checked> Espuma y burbujas</label>
+        <label><input type="checkbox" id="cAir" checked> Flujo de aire</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <details open>
+        <summary>¿Por qué el sensor falla aquí?</summary>
+        <ul>
+          <li><b>No es la pendiente en sí.</b> El codo hacia la bajada funciona como una caída libre: allí el agua pasa por la <b>profundidad crítica</b> y nada aguas abajo la frena. Cambia θ y verás que el llenado en el sensor casi no varía.</li>
+          <li><b>Nivel bajo:</b> perfil de remanso H2 (subcrítico) desde el codo; la tubería va parcialmente llena.</li>
+          <li><b>Nivel alto:</b> la entrada de arista viva forma una <b>vena contracta</b> (Cc ≈ 0.62) y un chorro supercrítico; como el aire entra por la descarga, la tubería <b>no se presuriza</b> aunque el reservorio esté lleno.</li>
+          <li><b>El equipo calcula Q = v · A<sub>llena</sub>.</b> Con electrodos mojados y área parcial, la velocidad real es mayor y el caudalímetro <b>sobre-lee</b>; si el agua baja de los electrodos, la señal se vuelve errática; si el EPD está activo, la salida cae a 0.</li>
+        </ul>
+        <p class="foot">Modelo: tubería DN300, 4 m horizontales, sensor a 2 m de la salida; flujo gradualmente variado (Manning) con energía específica y cos φ en la bajada. Fase 2: cuello de cisne aguas abajo del sensor.</p>
+      </details>
+    </div>
+  </aside>
+</div>
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
