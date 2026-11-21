@@ -67,8 +67,9 @@ export function createWater(stage) {
     scene.add(mesh);
   }
 
-  const r = GEOM.R * 0.988;
+  let r = GEOM.R * 0.988;
   function updateMesh(sol, t) {
+    r = GEOM.R * 0.988;
     const pos = geo.attributes.position.array, nor = geo.attributes.normal.array;
     for (let i = 0; i < Ns; i++) {
       const s = stations[i], F = frames[i];
@@ -129,7 +130,8 @@ export function createWater(stage) {
     p.xi = rand() * 2 - 1;
     p.kind = rand() < 0.55 ? 0 : 1;                       // 0 espuma superficial, 1 burbuja
     p.eta = p.kind === 0 ? 0 : 0.15 + 0.8 * rand();
-    p.size = p.kind === 0 ? 0.004 + 0.011 * rand() * rand() : 0.0018 + 0.004 * rand();
+    const k = Math.min(1, 0.45 + GEOM.D * 1.8);           // espuma proporcional al diámetro
+    p.size = (p.kind === 0 ? 0.004 + 0.011 * rand() * rand() : 0.0018 + 0.004 * rand()) * k;
     p.life = 1.5 + 3 * rand();
     p.age = warm ? rand() * p.life : 0;
   }

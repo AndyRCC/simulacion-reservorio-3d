@@ -117,22 +117,37 @@ export function drawProfile(cv, sol, t) {
   g.textAlign = 'right'; g.fillText('s [m]', W - pr, H - 8);
 }
 
+// LCD del convertidor MV145: caudal instantáneo, totalizador, tendencia y estado
 export function drawDisplay(cv, d) {
   const g = cv.getContext('2d'), W = cv.width, H = cv.height;
-  g.clearRect(0, 0, W, H);
-  g.fillStyle = '#0a1a12'; g.beginPath(); g.arc(W / 2, H / 2, W / 2, 0, 7); g.fill();
-  const lcd = g.createLinearGradient(0, 80, 0, 430);
-  lcd.addColorStop(0, '#b9d6a4'); lcd.addColorStop(1, '#93b884');
-  g.fillStyle = lcd; g.fillRect(70, 120, 372, 270);
-  g.fillStyle = '#16250f'; g.textAlign = 'center';
-  g.font = `700 30px ${MONO}`; g.fillText('Q  [L/s]', 256, 165);
-  g.font = `700 92px ${MONO}`; g.fillText(d.q.toFixed(1), 256, 262);
-  g.font = `700 30px ${MONO}`;
-  g.fillStyle = d.alarm ? '#7a0d0d' : '#16250f';
-  g.fillText(d.status, 256, 318);
-  g.font = `500 24px ${MONO}`; g.fillStyle = '#16250f';
-  g.fillText(`v ${d.v.toFixed(2)} m/s`, 256, 362);
-  g.fillStyle = '#c9d3dc'; g.font = `700 26px Inter, sans-serif`; g.fillText('MAG-FLOW DN300', 256, 100);
+  const bg = g.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#d7e6ee'); bg.addColorStop(1, '#b9cfdc');
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  const ink = '#18242e';
+  g.fillStyle = ink; g.strokeStyle = ink;
+  // fila de iconos: batería, señal, DN
+  g.lineWidth = 3; g.strokeRect(14, 12, 44, 20); g.fillRect(58, 17, 5, 10); g.fillRect(18, 16, 30, 12);
+  g.font = `700 22px ${MONO}`; g.textAlign = 'left'; g.fillText(`DN${d.dn}`, 80, 31);
+  g.textAlign = 'right'; g.fillText(d.alarm ? '⚠' : '✓', W - 16, 31);
+  // unidad y caudal
+  g.textAlign = 'left'; g.font = `700 26px ${MONO}`; g.fillText('l/s', 16, 92);
+  g.textAlign = 'right'; g.font = `700 104px ${MONO}`;
+  g.fillText(d.q.toFixed(d.q < 100 ? 2 : 1), W - 14, 128);
+  // totalizador
+  g.font = `600 24px ${MONO}`; g.textAlign = 'left';
+  g.fillText(`T+ ${d.tot.toFixed(3)} m³`, 16, 168);
+  // tendencia
+  const gx = 16, gy = 186, gw = W - 32, gh = 92;
+  g.lineWidth = 2; g.strokeRect(gx, gy, gw, gh);
+  const hs = d.hist, n = hs.length, mx = Math.max(1, ...hs) * 1.15;
+  g.beginPath();
+  for (let i = 0; i < n; i++) { const x = gx + (i / Math.max(1, n - 1)) * gw, y = gy + gh - (hs[i] / mx) * gh; i ? g.lineTo(x, y) : g.moveTo(x, y); }
+  g.lineTo(gx + gw, gy + gh); g.lineTo(gx, gy + gh); g.closePath();
+  g.fillStyle = 'rgba(24,36,46,.28)'; g.fill(); g.stroke();
+  // barra de estado
+  g.fillStyle = d.alarm ? '#7a1010' : ink;
+  g.font = `700 24px ${MONO}`; g.textAlign = 'left';
+  g.fillText(d.statusLcd, 16, H - 14);
 }
 
 export function areaPct(f) { return areaFraction(f) * 100; }

@@ -8,8 +8,8 @@ horizontal de un reservorio, antes de una bajada pronunciada, no mide bien.
 ## Cómo abrirla
 
 - **Sin instalar nada:** ejecuta `py build.py` y abre con doble clic
-  `dist/simulacion_fase1_3d.html` (~13 MB, todo embebido: Three.js, cielo HDRI y
-  texturas; funciona sin internet).
+  `dist/simulacion_fase1_3d.html` (~26 MB, todo embebido: Three.js, cielo HDRI,
+  texturas y rocas; funciona sin internet).
 - **Versión de desarrollo** (código separado en `js/`): sirve la carpeta y abre `index.html`.
 
   ```powershell
@@ -29,23 +29,36 @@ horizontal de un reservorio, antes de una bajada pronunciada, no mide bien.
 | Caudal | El menor entre control de salida (H2/presión + pérdida de entrada Ke = 0.5) y control de entrada (orificio) |
 | Caudalímetro | Q_ind = v · A_llena → **sobre-lectura** ≈ A_llena / A_mojada con ruido; señal errática si los electrodos (3 y 9 en punto) quedan en aire; salida 0 si el EPD está activo |
 
-Geometría: DN300, 4 m horizontales, sensor a 2 m de la salida, codo R = 0.6 m.
-Constantes en `js/hydraulics.js` (`GEOM`). `test-hidraulica.html` imprime una tabla de
-verificación de la física.
+Geometría: DN80 a DN400 seleccionable (bridas EN 1092-1 PN16, largo del caudalímetro
+según ISO 13359), 4 m horizontales, caudalímetro a 2 m de la salida, codo de radio largo
+(2D, mínimo 0.35 m). Constantes en `js/hydraulics.js` (`GEOM`, `DN_TABLE`).
+`test-hidraulica.html` imprime una tabla de verificación de la física.
+
+## Equipo modelado
+
+Caudalímetro electromagnético **ISOMAG**: sensor bridado **MS2500** (cuerpo verde, liner
+PTFE, caja de bornes) con convertidor a baterías **MV145** en montaje compacto (tapa
+ahumada abatible, display con caudal, totalizador y tendencia, teclas, tapa de baterías y
+prensaestopas). Modelo 3D propio hecho a partir de las fotos del fabricante; la carcasa del
+sensor lleva una ventana de corte para ver el agua.
 
 ## Archivos
 
-- `js/hydraulics.js` — física 1D · `js/sensor.js` — modelo del caudalímetro
-- `js/scene.js` — renderer PBR, HDRI, materiales, reservorio · `js/terrain.js` — relieve
-- `js/pipeline.js` — tubería, bridas, sensor, apoyos, cámara · `js/water.js` — agua, espuma, burbujas, aire
-- `js/ui.js` — gráficos 2D · `js/main.js` — integración y controles
+- `js/hydraulics.js` — física 1D y tabla de DN · `js/sensor.js` — modelo del caudalímetro
+- `js/flowmeter.js` — modelo 3D MS2500 + MV145 · `js/pipeline.js` — tubería, bridas, apoyos, cámara
+- `js/scene.js` — renderer PBR, HDRI con sol orientado, materiales, reservorio
+- `js/terrain.js` — relieve y mezcla pasto/suelo/grava · `js/vegetation.js` — pasto con viento, árboles, arbustos, rocas
+- `js/water.js` — agua, espuma, burbujas, aire · `js/ui.js` — gráficos 2D y LCD · `js/main.js` — integración
 
 ## Créditos
 
 - Three.js r160 (MIT) — `vendor/`
-- Cielo HDRI *kloofendal_48d_partly_cloudy_puresky*, texturas *preconcrete_wall_001* y
-  *gravel_ground_01*: Poly Haven (CC0)
+- De Poly Haven (CC0): cielo HDRI *kloofendal_38d_partly_cloudy_puresky*; texturas
+  *preconcrete_wall_001*, *gravel_ground_01*, *leafy_grass*, *excavated_soil_wall* y
+  *bark_brown_02*; modelo *rock_moss_set_01*
 - Mapa normal de agua: ejemplos de three.js (MIT)
+- ISOMAG, MS2500 y MV145 son marcas/modelos de ISOIL Industria; se representan solo como
+  referencia del equipo instalado.
 
 ## Fase 2 (pendiente)
 

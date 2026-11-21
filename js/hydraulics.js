@@ -11,12 +11,22 @@
 // =============================================================================
 export const G = 9.81;
 
+// Bridas EN 1092-1 PN16 y largo brida-brida ISO 13359 del caudalímetro [m]
+export const DN_TABLE = {
+  80:  { flangeOD: 0.200, pcd: 0.160, bolts: 8,  bolt: 0.016, len: 0.200 },
+  100: { flangeOD: 0.220, pcd: 0.180, bolts: 8,  bolt: 0.016, len: 0.250 },
+  125: { flangeOD: 0.250, pcd: 0.210, bolts: 8,  bolt: 0.016, len: 0.250 },
+  150: { flangeOD: 0.285, pcd: 0.240, bolts: 8,  bolt: 0.020, len: 0.300 },
+  200: { flangeOD: 0.340, pcd: 0.295, bolts: 12, bolt: 0.020, len: 0.350 },
+  250: { flangeOD: 0.405, pcd: 0.355, bolts: 12, bolt: 0.024, len: 0.450 },
+  300: { flangeOD: 0.460, pcd: 0.410, bolts: 12, bolt: 0.024, len: 0.500 },
+  350: { flangeOD: 0.520, pcd: 0.470, bolts: 16, bolt: 0.024, len: 0.550 },
+  400: { flangeOD: 0.580, pcd: 0.525, bolts: 16, bolt: 0.027, len: 0.600 },
+};
+
 export const GEOM = {
-  D: 0.30,               // diámetro interno [m] (DN300)
-  wall: 0.012,           // espesor pared acrílica [m]
   L1: 4.0,               // tramo horizontal: cara interna del muro → inicio del codo [m]
   sSensor: 2.0,          // centro del caudalímetro [m]
-  sensorLen: 0.50,       // longitud brida-brida del caudalímetro [m]
   Rb: 0.60,              // radio del codo [m]
   floorY: 4.0,           // cota del fondo del reservorio [m]
   invertAboveFloor: 0.20,
@@ -26,10 +36,23 @@ export const GEOM = {
   Cc: 0.62,              // coeficiente de contracción (arista viva)
   Cv: 0.97,
 };
-GEOM.R = GEOM.D / 2;
-GEOM.yInvert = GEOM.floorY + GEOM.invertAboveFloor;
-GEOM.yAxis = GEOM.yInvert + GEOM.R;
-GEOM.Afull = Math.PI * GEOM.D * GEOM.D / 4;
+
+// Cambia el diámetro nominal y recalcula todas las cotas derivadas
+export function setDN(dn) {
+  const t = DN_TABLE[dn];
+  GEOM.DN = dn;
+  GEOM.D = dn / 1000;                       // diámetro interno ≈ DN
+  GEOM.R = GEOM.D / 2;
+  GEOM.wall = 0.004 + 0.025 * GEOM.D;       // pared acrílica
+  GEOM.sensorLen = t.len;
+  GEOM.flangeOD = t.flangeOD; GEOM.pcd = t.pcd; GEOM.bolts = t.bolts; GEOM.boltD = t.bolt;
+  GEOM.flangeT = 0.016 + 0.03 * GEOM.D;
+  GEOM.Rb = Math.max(0.35, 2 * GEOM.D);     // codo de radio largo
+  GEOM.yInvert = GEOM.floorY + GEOM.invertAboveFloor;
+  GEOM.yAxis = GEOM.yInvert + GEOM.R;
+  GEOM.Afull = Math.PI * GEOM.D * GEOM.D / 4;
+}
+setDN(150);
 
 // ---------------------------------------------------------------- trayectoria
 export function makePath(theta) {
