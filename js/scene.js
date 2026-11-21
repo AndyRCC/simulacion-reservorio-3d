@@ -140,7 +140,6 @@ export function createStage(container) {
     gravelD: tex(ASSETS.groundDiff, true), gravelN: tex(ASSETS.groundNor), gravelR: tex(ASSETS.groundRough),
     grassD: tex(ASSETS.grassDiff, true), grassN: tex(ASSETS.grassNor), grassR: tex(ASSETS.grassRough),
     soilD: tex(ASSETS.soilDiff, true), soilN: tex(ASSETS.soilNor), soilR: tex(ASSETS.soilRough),
-    barkD: tex(ASSETS.barkDiff, true), barkN: tex(ASSETS.barkNor),
   };
   const M = {};
   M.terrain = terrainMaterial(T);
@@ -148,7 +147,6 @@ export function createStage(container) {
     map: tex(ASSETS.concreteDiff, true), normalMap: tex(ASSETS.concreteNor), roughnessMap: tex(ASSETS.concreteRough),
     color: 0xd2d0cb, roughness: 1.0, envMapIntensity: 0.6,
   });
-  M.bark = new THREE.MeshStandardMaterial({ map: T.barkD, normalMap: T.barkN, roughness: 0.95, envMapIntensity: 0.5 });
   M.steel = new THREE.MeshStandardMaterial({ color: 0xb9c0c8, metalness: 1.0, roughness: 0.32 });
   M.galv = new THREE.MeshStandardMaterial({ color: 0x9aa3ab, metalness: 0.9, roughness: 0.45 });
   M.pvcFlange = new THREE.MeshPhysicalMaterial({ color: 0x5d6368, roughness: 0.45, clearcoat: 0.3, side: THREE.DoubleSide });

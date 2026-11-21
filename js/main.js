@@ -8,7 +8,6 @@ import { MagMeter } from './sensor.js';
 import { createStage } from './scene.js';
 import { buildPipeline } from './pipeline.js';
 import { createWater } from './water.js';
-import { createVegetation } from './vegetation.js';
 import { drawSection, drawTime, drawProfile, drawDisplay } from './ui.js';
 import { buildBranding } from './branding.js';
 import { ASSETS } from './assets.js';
@@ -18,11 +17,10 @@ document.querySelectorAll('img.brand-logo').forEach((im) => { im.src = ASSETS.lo
 const $ = (id) => document.getElementById(id);
 const stage = createStage($('view'));
 const water = createWater(stage);
-const veg = createVegetation(stage);
 const meter = new MagMeter();
 const P = { H: 1.6, thetaDeg: 45, n: 0.009, dn: 150 };
 const opts = { particles: true, air: true };
-let sol = null, pipe = null, built = '', dirty = true, vegTimer = 0, vegBuilt = '';
+let sol = null, pipe = null, built = '', dirty = true, branded = false;
 
 // ------------------------------------------------------------------ etiquetas
 function label(cls, maxDist = 99) {
@@ -63,10 +61,7 @@ function resolve() {
     pipe = buildPipeline(stage, sol.path);
     water.rebuild(sol.path);
     built = key;
-    clearTimeout(vegTimer);
-    const tp = pipe.terrain.tp;
-    if (!vegBuilt) { veg.rebuild(tp); vegBuilt = key; buildBranding(stage, tp); }
-    else vegTimer = setTimeout(() => { veg.rebuild(tp); vegBuilt = key; }, 350);
+    if (!branded) { buildBranding(stage, pipe.terrain.tp); branded = true; }
   }
   placeLabels();
   water.setReservoir(P.H);
@@ -209,7 +204,6 @@ function tick(dt) {
   }
   stage.controls.update();
   updateLabelVisibility();
-  veg.update(t);
   water.update(sol, t, dt, opts);
   stage.renderer.render(stage.scene, stage.camera);
   stage.labelRenderer.render(stage.scene, stage.camera);

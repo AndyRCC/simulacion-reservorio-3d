@@ -8,8 +8,8 @@ horizontal de un reservorio, antes de una bajada pronunciada, no mide bien.
 ## Cómo abrirla
 
 - **Sin instalar nada:** ejecuta `py build.py` y abre con doble clic
-  `dist/simulacion_fase1_3d.html` (~26 MB, todo embebido: Three.js, cielo HDRI,
-  texturas y rocas; funciona sin internet).
+  `dist/simulacion_fase1_3d.html` (~20 MB, todo embebido: Three.js, cielo HDRI y
+  texturas; funciona sin internet).
 - **Versión de desarrollo** (código separado en `js/`): sirve la carpeta y abre `index.html`.
 
   ```powershell
@@ -47,15 +47,14 @@ sensor lleva una ventana de corte para ver el agua.
 - `js/hydraulics.js` — física 1D y tabla de DN · `js/sensor.js` — modelo del caudalímetro
 - `js/flowmeter.js` — modelo 3D MS2500 + MV145 · `js/pipeline.js` — tubería, bridas, apoyos, cámara
 - `js/scene.js` — renderer PBR, HDRI con sol orientado, materiales, reservorio
-- `js/terrain.js` — relieve y mezcla pasto/suelo/grava · `js/vegetation.js` — pasto con viento, árboles, arbustos, rocas
+- `js/terrain.js` — relieve y mezcla pasto/suelo/grava · `js/branding.js` — placa y letrero con el logo
 - `js/water.js` — agua, espuma, burbujas, aire · `js/ui.js` — gráficos 2D y LCD · `js/main.js` — integración
 
 ## Créditos
 
 - Three.js r160 (MIT) — `vendor/`
 - De Poly Haven (CC0): cielo HDRI *kloofendal_38d_partly_cloudy_puresky*; texturas
-  *preconcrete_wall_001*, *gravel_ground_01*, *leafy_grass*, *excavated_soil_wall* y
-  *bark_brown_02*; modelo *rock_moss_set_01*
+  *preconcrete_wall_001*, *gravel_ground_01*, *leafy_grass* y *excavated_soil_wall*
 - Mapa normal de agua: ejemplos de three.js (MIT)
 - ISOMAG, MS2500 y MV145 son marcas/modelos de ISOIL Industria; se representan solo como
   referencia del equipo instalado.

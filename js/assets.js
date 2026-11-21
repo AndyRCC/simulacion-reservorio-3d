@@ -1,5 +1,5 @@
 // Rutas de assets (el script de build las reemplaza por data-URIs embebidos)
-// HDRI, texturas y rocas: Poly Haven (CC0). Normal de agua: ejemplos de three.js (MIT).
+// HDRI y texturas: Poly Haven (CC0). Normal de agua: ejemplos de three.js (MIT).
 export const ASSETS = {
   sky: './assets/sky_2k.hdr',
   concreteDiff: './assets/concrete_diff.jpg',
@@ -14,9 +14,6 @@ export const ASSETS = {
   soilDiff: './assets/soil_diff.jpg',
   soilNor: './assets/soil_nor.jpg',
   soilRough: './assets/soil_rough.jpg',
-  barkDiff: './assets/bark_diff.jpg',
-  barkNor: './assets/bark_nor.jpg',
-  rocks: './assets/rocks/rock_moss_set_01.gltf',
   waterNormals: './assets/waternormals.jpg',
   logo: './assets/logo.png',
 };

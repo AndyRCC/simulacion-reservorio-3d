@@ -107,7 +107,7 @@ export function createWater(stage) {
 
   // ------------------------------------------- espuma y burbujas (lagrangianas)
   const NP = 2600;
-  const foamGeo = new THREE.IcosahedronGeometry(1, 1);
+  const foamGeo = new THREE.IcosahedronGeometry(1, 0);
   const foamMat = new THREE.MeshStandardMaterial({ color: 0xf3f8fa, roughness: 0.85, metalness: 0, envMapIntensity: 0.9 });
   const bubMat = new THREE.MeshPhysicalMaterial({ color: 0xe8f6ff, roughness: 0.08, metalness: 0, clearcoat: 1, envMapIntensity: 1.6 });
   const foam = new THREE.InstancedMesh(foamGeo, foamMat, NP);

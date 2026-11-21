@@ -7,7 +7,7 @@ import { GEOM } from './hydraulics.js';
 import { heightAt } from './terrain.js';
 import { ASSETS } from './assets.js';
 
-export const SIGN = { x: -6.6, z: 3.1, yaw: -0.2 };      // letrero de obra (para excluir vegetación)
+export const SIGN = { x: -6.6, z: 3.1, yaw: -0.2 };      // letrero de obra
 
 // Panel blanco con el logo, línea roja y textos
 function panelTexture(lines, onReady) {
