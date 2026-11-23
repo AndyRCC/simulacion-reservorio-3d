@@ -90,7 +90,7 @@ export function createWater(stage) {
         o += 3;
       }
       const c = r * Math.sin(b0);
-      const sup = s > GEOM.L1 || sol.regime === 'B';
+      const sup = s > sol.path.sBrink || sol.regime === 'B';
       for (let k = 0; k < K_SRF; k++) {
         const u = c - 2 * c * k / (K_SRF - 1);
         const edge = 1 - Math.pow(Math.abs(u) / Math.max(1e-4, c), 2);
@@ -121,7 +121,7 @@ export function createWater(stage) {
   const rand = () => ((rnd = (rnd * 1664525 + 1013904223) >>> 0) / 4294967296);
 
   function spawn(p, sol, warm) {
-    const L1 = GEOM.L1, tot = sol.path.total;
+    const L1 = sol.path.sBrink, tot = sol.path.total;
     const u = rand();
     if (sol.regime === 'B' && u < 0.22) p.s = 0.15 + rand() * 0.9;               // chorro contraído
     else if (u < 0.5) p.s = L1 - 0.15 + rand() * 0.7;                             // quiebre / codo
@@ -150,7 +150,7 @@ export function createWater(stage) {
       p.s += v * dt * (p.kind === 0 ? 1.0 : 0.92);
       p.age += dt;
       if (p.kind === 1) p.eta = Math.max(0, p.eta - dt * (0.25 + 0.4 * rand()));
-      const aer = p.s > GEOM.L1 - 0.2 || (sol.regime === 'B' && p.s < 1.4);
+      const aer = p.s > sol.path.sBrink - 0.2 || (sol.regime === 'B' && p.s < 1.4);
       if (p.s > tot || p.age > p.life || f0 > 0.999 || (!aer && rand() < dt * 2)) { spawn(p, sol, false); continue; }
       let f = f0 + waveOffset(p.s, t, sol);
       f = Math.max(0.02, Math.min(0.995, f));
@@ -193,7 +193,7 @@ export function createWater(stage) {
       const p = A[i];
       p.s -= dt * (0.6 + 0.9 * p.b);
       const f = sol.sample(Math.max(0, p.s), sol.f);
-      if (p.s < 0.05 || f > 0.97) { p.s = GEOM.L1 + sol.path.Lb + rand() * 3.5; p.a = rand(); p.b = rand(); }
+      if (p.s < (sol.kind === 'goose' ? sol.path.sCrest0 : 0.05) || f > 0.97) { p.s = sol.path.sBendEnd + rand() * 3.5; p.a = rand(); p.b = rand(); }
       sol.path.at(p.s, F);
       const ws = -r + 2 * r * Math.min(0.97, f);
       const w = ws + (r - ws) * (0.25 + 0.6 * p.a);

@@ -1,7 +1,13 @@
-# Fase 1 — Descarga de reservorio con bajada a 45° (3D)
+# Caudalímetro en la descarga de un reservorio con bajada a 45° (3D)
 
-Simulación 3D de por qué un caudalímetro electromagnético instalado en la salida
-horizontal de un reservorio, antes de una bajada pronunciada, no mide bien.
+Simulación 3D en dos casos, seleccionables en la página:
+
+- **Caso 1 (Fase 1):** por qué un caudalímetro electromagnético instalado en la salida
+  horizontal de un reservorio, antes de una bajada pronunciada, no mide bien.
+- **Caso 2 (Fase 2):** el mismo sensor en un **cuello de cisne**, que lo mantiene siempre
+  lleno y mide correctamente.
+
+Enlaces directos: `#caso1` y `#caso2` al final de la URL.
 
 **Ver en línea:** https://andyrcc.github.io/simulacion-reservorio-3d/
 
@@ -59,7 +65,16 @@ sensor lleva una ventana de corte para ver el agua.
 - ISOMAG, MS2500 y MV145 son marcas/modelos de ISOIL Industria; se representan solo como
   referencia del equipo instalado.
 
-## Fase 2 (pendiente)
+## Caso 2: cuello de cisne
 
-Cuello de cisne aguas abajo del sensor: con la física ya separada de la geometría, basta
-añadir el tramo ascendente a `makePath` y un control hidráulico en su cresta.
+Salida → codo hacia abajo → **tramo bajo con el sensor** (5D rectos aguas arriba, 3D aguas
+abajo) → montante → **cresta** con **ventosa / rompe-vacío** → codo θ → bajada.
+
+- La clave del sensor queda ≥ 0.25 m bajo el fondo de la cresta: el tramo bajo no puede
+  vaciarse y va **siempre lleno, a presión**.
+- El control crítico pasa a la cresta; el aire que entra por la descarga solo llega hasta
+  ella y la ventosa lo evacúa (y evita el sifonamiento).
+- Modelo: pozo libre aguas arriba, tramo a presión con Manning + K = 0.25 por codo,
+  profundidad crítica en el quiebre de la cresta y perfil S2 en la bajada.
+- Costo: pérdida de carga adicional; con el mismo nivel pasa entre 10 y 25 % menos caudal
+  (la página lo muestra para cada DN y nivel).

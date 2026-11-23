@@ -83,11 +83,12 @@ export function drawTime(cv, hist) {
 export function drawProfile(cv, sol, t) {
   const g = cv.getContext('2d'), W = cv.width, H = cv.height;
   g.clearRect(0, 0, W, H);
-  const sMax = Math.min(sol.path.total, GEOM.L1 + sol.path.Lb + 3.5);
+  const P = sol.path;
+  const sMax = Math.min(P.total, P.sBendEnd + 3.0);
   const pl = 34, pr = 10, pt = 26, pb = 30;
   const X = (s) => pl + (s / sMax) * (W - pl - pr), Yf = (f) => H - pb - f * (H - pt - pb);
   // zona del sensor
-  const s0 = GEOM.sSensor - GEOM.sensorLen / 2, s1 = GEOM.sSensor + GEOM.sensorLen / 2;
+  const s0 = P.sSensor - GEOM.sensorLen / 2, s1 = P.sSensor + GEOM.sensorLen / 2;
   g.fillStyle = 'rgba(56,189,248,.12)'; g.fillRect(X(s0), Yf(1), X(s1) - X(s0), Yf(0) - Yf(1));
   // agua
   g.beginPath(); g.moveTo(X(0), Yf(0));
@@ -98,18 +99,21 @@ export function drawProfile(cv, sol, t) {
   // tubería
   g.strokeStyle = 'rgba(220,235,250,.7)'; g.lineWidth = 2;
   g.beginPath(); g.moveTo(X(0), Yf(1)); g.lineTo(X(sMax), Yf(1)); g.moveTo(X(0), Yf(0)); g.lineTo(X(sMax), Yf(0)); g.stroke();
-  // codo
+  // puntos singulares (codo / bajada / montante / cresta)
   g.setLineDash([5, 5]); g.strokeStyle = C.warn; g.lineWidth = 1.5;
-  g.beginPath(); g.moveTo(X(GEOM.L1), Yf(1.12)); g.lineTo(X(GEOM.L1), Yf(-0.05)); g.stroke();
-  // profundidad crítica (tramo horizontal)
+  g.font = `600 15px ${MONO}`; g.textAlign = 'center';
+  for (const m of sol.marks) {
+    g.beginPath(); g.moveTo(X(m.s), Yf(1.12)); g.lineTo(X(m.s), Yf(-0.05)); g.stroke();
+    g.fillStyle = C.warn; g.fillText(m.label, X(m.s), pt - 8);
+  }
+  // profundidad crítica (tramo de control)
+  const [c0, c1] = sol.ycSpan;
   g.strokeStyle = 'rgba(255,255,255,.55)';
-  g.beginPath(); g.moveTo(X(0), Yf(sol.yc / GEOM.D)); g.lineTo(X(GEOM.L1), Yf(sol.yc / GEOM.D)); g.stroke();
+  g.beginPath(); g.moveTo(X(c0), Yf(sol.yc / GEOM.D)); g.lineTo(X(c1), Yf(sol.yc / GEOM.D)); g.stroke();
   g.setLineDash([]);
-  g.font = `600 15px ${MONO}`; g.fillStyle = C.warn; g.textAlign = 'center';
-  g.fillText('codo', X(GEOM.L1), pt - 8);
-  g.fillStyle = C.acc; g.fillText('sensor', X(GEOM.sSensor), pt - 8);
+  g.fillStyle = C.acc; g.textAlign = 'center'; g.fillText('sensor', X(P.sSensor), Yf(0) - 8);   // dentro de la franja
   g.fillStyle = 'rgba(255,255,255,.75)'; g.textAlign = 'left';
-  g.fillText('y_c', X(0.08), Yf(sol.yc / GEOM.D) - 5);
+  g.fillText('y_c', X(c0) + 4, Yf(sol.yc / GEOM.D) + 16);
   g.fillStyle = C.mut; g.textAlign = 'right'; g.fillText('y/D', pl - 4, pt + 4);
   g.fillText('1', pl - 6, Yf(1) + 5); g.fillText('0', pl - 6, Yf(0) + 5);
   g.textAlign = 'center';

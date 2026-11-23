@@ -3,26 +3,28 @@
 <title>Prueba hidráulica</title>
 <pre id="o" style="font:12px monospace"></pre>
 <script type="module">
-import { solveHydraulics, GEOM } from './js/hydraulics.js';
+import { solveHydraulics, setDN, GEOM } from './js/hydraulics.js';
 const o = document.getElementById('o');
-const rows = [];
+const out = [];
 const t0 = performance.now();
-for (const H of [0.08, 0.15, 0.25, 0.32, 0.40, 0.55, 0.8, 1.2, 1.8, 2.5]) {
-  for (const th of [45]) {
-    const r = solveHydraulics(H, th * Math.PI / 180, 0.009);
-    rows.push([H, th, r.regime, (r.Q * 1000).toFixed(1), (r.QA * 1000).toFixed(1), (r.QB * 1000).toFixed(1),
-      r.sensor.f.toFixed(3), r.sensor.v.toFixed(2), r.sensor.Fr.toFixed(2), r.outlet.f.toFixed(3), r.outlet.v.toFixed(2), r.outlet.Fr.toFixed(2), r.choked].join('\t'));
+let runs = 0;
+for (const dn of [100, 150, 300, 400]) {
+  setDN(dn);
+  out.push(`\n== DN${dn} ==  H\tcaso\treg\tQ L/s\tfSens\tvSens\tFrSens\tpSens\tpool/D\tfOut\tvOut`);
+  for (const H of [0.1, 0.3, 0.6, 1.0, 1.6, 2.5]) {
+    for (const kind of ['simple', 'goose']) {
+      const r = solveHydraulics(H, Math.PI / 4, 0.009, kind); runs++;
+      out.push([H, kind, r.regime, (r.Q * 1000).toFixed(1), r.sensor.f.toFixed(3), r.sensor.v.toFixed(2), r.sensor.Fr.toFixed(2),
+        r.sensor.pressure != null ? r.sensor.pressure.toFixed(2) : '-', r.pool != null ? (r.pool / GEOM.D).toFixed(2) : '-',
+        r.outlet.f.toFixed(3), r.outlet.v.toFixed(2)].join('\t'));
+    }
   }
 }
-const t1 = performance.now();
-const r = solveHydraulics(1.8, 15 * Math.PI / 180, 0.009);
-const r2 = solveHydraulics(1.8, 65 * Math.PI / 180, 0.013);
+setDN(150);
+const g = solveHydraulics(1.6, Math.PI / 4, 0.009, 'goose');
 const prof = [];
-const rr = solveHydraulics(0.3, Math.PI / 4, 0.009);
-for (let sv = 0; sv <= rr.path.total; sv += 0.5) prof.push(sv.toFixed(1) + ':' + rr.sample(sv, rr.f).toFixed(3));
-o.textContent = 'H\tth\treg\tQ\tQA\tQB\tfSens\tvSens\tFrSens\tfOut\tvOut\tFrOut\tchoked\n' + rows.join('\n') +
-  `\n\nms per solve: ${((t1 - t0) / 10).toFixed(1)}` +
-  `\nH1.8 th15: Q=${(r.Q*1000).toFixed(1)} fS=${r.sensor.f.toFixed(3)} fOut=${r.outlet.f.toFixed(3)} total=${r.path.total.toFixed(2)}` +
-  `\nH1.8 th65 n.013: Q=${(r2.Q*1000).toFixed(1)} fS=${r2.sensor.f.toFixed(3)} fOut=${r2.outlet.f.toFixed(3)}` +
-  `\nperfil H=0.3: ${prof.join('  ')}`;
+for (let sv = 0; sv <= g.path.total; sv += 0.25) { const p = g.path.at(sv); prof.push(`${sv.toFixed(2)}:${g.sample(sv, g.f).toFixed(2)}@(${p.x.toFixed(2)},${p.y.toFixed(2)},${(p.phi * 180 / Math.PI).toFixed(0)}°)`); }
+o.textContent = out.join('\n') + `\n\nms por solución: ${((performance.now() - t0) / runs).toFixed(1)}` +
+  `\n\nDN150 goose: sDrop0=${g.path.sDrop0.toFixed(2)} sLow0=${g.path.sLow0.toFixed(2)} sSensor=${g.path.sSensor.toFixed(2)} sLow1=${g.path.sLow1.toFixed(2)} sCrest0=${g.path.sCrest0.toFixed(2)} sBrink=${g.path.sBrink.toFixed(2)} total=${g.path.total.toFixed(2)} hDrop=${g.path.hDrop.toFixed(2)} headLoss=${g.headLoss.toFixed(3)}` +
+  `\nperfil: ${prof.join('  ')}`;
 </script>

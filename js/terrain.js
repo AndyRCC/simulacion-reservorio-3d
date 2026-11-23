@@ -18,14 +18,20 @@ function vnoise(x, z) {
 export function fbm(x, z) { let s = 0, a = 0.5, f = 1; for (let i = 0; i < 5; i++) { s += a * vnoise(x * f, z * f); f *= 2.03; a *= 0.5; } return s; }
 
 export function terrainParams(path) {
-  const { L1, R } = GEOM;
+  const { R } = GEOM;
   const hillTop = GEOM.floorY - GEOM.wallT - 0.35;
   const gap = 0.42;
   const th = path.theta;
-  const p2 = path.at(L1 + path.Lb);
+  const p2 = path.at(path.sBendEnd);
   const invX = p2.x - (R + gap) * p2.nx, invY = p2.y - (R + gap) * p2.ny;
   const xEdge = invX - ((invY - hillTop) / Math.sin(th)) * Math.cos(th);
-  return { hillTop, th, xEdge, chamberX0: path.end.x - 0.15 };
+  const tp = { hillTop, th, xEdge, chamberX0: path.end.x - 0.15, trench: null };
+  if (path.kind === 'goose') {                    // zanja de grava bajo el tramo bajo del cuello de cisne
+    const a = path.at(path.sLow0), b = path.at(path.sLow1);
+    const bottom = a.y - R - GEOM.flangeOD / 2 - 0.12;
+    tp.trench = { x0: a.x - 0.35, x1: b.x + 0.35, depth: Math.max(0, hillTop - bottom) };
+  }
+  return tp;
 }
 
 // eje del camino de acceso (grava) que sube por detrás del reservorio
@@ -45,7 +51,13 @@ export function heightAt(tp, x, z) {
   const road = 1 - sstep(1.4, 3.0, Math.abs(x - roadX(z))) * (z < 1 ? 1 : 0);
   const m = Math.min(corridor + 0.08, 1) * resMask * chMask * (1 - 0.8 * road);
   const n = (fbm(x * 0.07, z * 0.07) - 0.5) * 1.6 + (fbm(x * 0.6 + 7, z * 0.6 - 3) - 0.5) * 0.12;
-  return h + n * m * (0.35 + 0.65 * sstep(0, 2, h)) * 0.9;
+  h += n * m * (0.35 + 0.65 * sstep(0, 2, h)) * 0.9;
+  const tr = tp.trench;
+  if (tr && tr.depth > 0) {
+    const dx = Math.max(tr.x0 - x, 0, x - tr.x1);
+    h -= tr.depth * (1 - sstep(0.0, 0.9, dx)) * (1 - sstep(0.9, 1.8, az));
+  }
+  return h;
 }
 
 // Máscara de grava (plataformas, corredor, camino) en (x, z)

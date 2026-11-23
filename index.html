@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fase 1 · Descarga de reservorio 3D</title>
+<title>Caudalímetro en descarga de reservorio · Fase 1 y 2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -57,6 +57,15 @@ details ul{padding-left:18px;margin:6px 0}
 .lbl small{display:block;font:500 10px var(--mono);color:#b9c6d4}
 .lbl.bad{border-color:rgba(248,113,113,.7)} .lbl.bad small{color:#fca5a5}
 .lbl.warn{border-color:rgba(251,191,36,.7)}
+.lbl.ok{border-color:rgba(52,211,153,.8)} .lbl.ok small{color:#a7f3d0}
+.cases{display:flex;gap:6px;margin-top:8px;pointer-events:auto}
+.cases button{flex:1;font:700 12px Inter,sans-serif;color:var(--txt);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left;line-height:1.25}
+.cases button small{display:block;font:500 11px Inter,sans-serif;color:var(--mut)}
+.cases button:hover{border-color:var(--acc)}
+.cases button.on[data-c=simple]{background:rgba(251,191,36,.16);border-color:var(--warn)}
+.cases button.on[data-c=goose]{background:rgba(52,211,153,.16);border-color:var(--ok)}
+body[data-case="1"] .c2,body[data-case="2"] .c1{display:none}
+#cmpNote{margin-top:8px;font-size:12px;color:#c7d2de;border-top:1px dashed var(--line);padding-top:7px}
 #loading{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:16px;background:#0b0f14;z-index:5;font:600 13px var(--mono);color:var(--mut);transition:opacity .6s}
 .brand{display:inline-flex;align-items:center;background:#fff;border-radius:6px;padding:3px 8px;margin-right:8px;vertical-align:middle;box-shadow:0 1px 6px rgba(0,0,0,.3)}
 .brand img{height:19px;display:block}
@@ -85,8 +94,12 @@ details ul{padding-left:18px;margin:6px 0}
     <div id="loading"><span class="brand"><img class="brand-logo" alt="LabProjects"></span>Cargando cielo HDRI y texturas…</div>
     <div class="hud">
       <div class="title">
-        <span class="brand"><img class="brand-logo" alt="LabProjects"></span><span class="tag">FASE 1 · DIAGNÓSTICO</span><span id="regBadge" class="badge" style="color:var(--warn)">—</span>
-        <h1>Descarga de reservorio con bajada a 45°: el caudalímetro no ve la tubería llena</h1>
+        <span class="brand"><img class="brand-logo" alt="LabProjects"></span><span class="tag" id="caseTag">FASE 1 · DIAGNÓSTICO</span>
+        <h1 id="caseTitle">Descarga de reservorio con bajada a 45°: el caudalímetro no ve la tubería llena</h1>
+        <div class="cases" id="caseSeg">
+          <button data-c="simple" class="on">Caso 1 · Sin cuello de cisne<small>salida directa a la bajada: tubería parcial</small></button>
+          <button data-c="goose">Caso 2 · Con cuello de cisne<small>sensor en tramo bajo: siempre lleno</small></button>
+        </div>
         <p>Hidráulica 1D real (energía + profundidad crítica) · Render PBR con iluminación HDRI · Tubería acrílica para ver el interior</p>
       </div>
       <span id="alarm" class="badge" style="color:var(--bad);background:rgba(40,8,8,.75);pointer-events:auto">—</span>
@@ -109,6 +122,7 @@ details ul{padding-left:18px;margin:6px 0}
         <div class="kpi real"><div class="k">Caudal real (hidráulico)</div><div class="v" id="qReal">—</div><div class="s" id="qRealS">—</div></div>
         <div class="kpi meas"><div class="k">Lectura del caudalímetro</div><div class="v" id="qMeas">—</div><div class="s" id="qErr">—</div></div>
       </div>
+      <div id="cmpNote">—</div>
     </div>
 
     <div class="card">
@@ -175,7 +189,7 @@ details ul{padding-left:18px;margin:6px 0}
     </div>
 
     <div class="card">
-      <details open>
+      <details open class="c1">
         <summary>¿Por qué el sensor falla aquí?</summary>
         <ul>
           <li><b>No es la pendiente en sí.</b> El codo hacia la bajada funciona como una caída libre: allí el agua pasa por la <b>profundidad crítica</b> y nada aguas abajo la frena. Cambia θ y verás que el llenado en el sensor casi no varía.</li>
@@ -183,7 +197,19 @@ details ul{padding-left:18px;margin:6px 0}
           <li><b>Nivel alto:</b> la entrada de arista viva forma una <b>vena contracta</b> (Cc ≈ 0.62) y un chorro supercrítico; como el aire entra por la descarga, la tubería <b>no se presuriza</b> aunque el reservorio esté lleno.</li>
           <li><b>El equipo calcula Q = v · A<sub>llena</sub>.</b> Con electrodos mojados y área parcial, la velocidad real es mayor y el caudalímetro <b>sobre-lee</b>; si el agua baja de los electrodos, la señal se vuelve errática; si el EPD está activo, la salida cae a 0.</li>
         </ul>
-        <p class="foot">Modelo: tubería DN80–DN400 con bridas EN 1092-1 PN16, 4 m horizontales, caudalímetro ISOMAG MS2500 + convertidor MV145 a 2 m de la salida; flujo gradualmente variado (Manning) con energía específica y cos φ en la bajada. La carcasa del sensor se muestra con una ventana de corte para ver el agua. Fase 2: cuello de cisne aguas abajo del sensor.</p>
+        <p class="foot">Modelo: tubería DN80–DN400 con bridas EN 1092-1 PN16, 4 m horizontales, caudalímetro ISOMAG MS2500 + convertidor MV145 a 2 m de la salida; flujo gradualmente variado (Manning) con energía específica y cos φ en la bajada. La carcasa del sensor se muestra con una ventana de corte para ver el agua. Compáralo con el Caso 2 (cuello de cisne).</p>
+      </details>
+      <details open class="c2">
+        <summary>¿Por qué el cuello de cisne lo soluciona?</summary>
+        <ul>
+          <li><b>El sensor baja a un tramo inferior</b> y el agua tiene que subir por un montante hasta una <b>cresta</b> más alta que la clave del sensor. Ese tramo no puede vaciarse: va <b>siempre lleno, a presión</b>, incluso con caudal muy bajo.</li>
+          <li><b>El control hidráulico se traslada a la cresta:</b> la profundidad crítica y la caída libre ocurren allí, aguas abajo del sensor.</li>
+          <li><b>El aire que entra por la descarga solo llega hasta la cresta.</b> La <b>ventosa / rompe-vacío</b> lo evacúa y evita que la bajada haga sifón y vacíe el tramo del sensor.</li>
+          <li><b>Lectura correcta:</b> con A<sub>mojada</sub> = A<sub>llena</sub>, Q = v · A es exacto, los electrodos y el EPD van sumergidos y no hay burbujas en la sección de medida.</li>
+          <li><b>Buenas prácticas:</b> 5D rectos aguas arriba y 3D aguas abajo del sensor; clave del sensor ≥ 0.25 m bajo el fondo de la cresta; ventosa en el punto alto.</li>
+          <li><b>Costo:</b> los 4 codos y el tramo lleno añaden pérdida de carga, así que con el mismo nivel pasa algo menos de caudal (ver nota en “Caudal”). Verifica que la línea lo tolera.</li>
+        </ul>
+        <p class="foot">Modelo: pozo libre aguas arriba, tramo bajo a presión (Manning + K = 0.25 por codo), cresta con profundidad crítica en el quiebre y perfil S2 en la bajada.</p>
       </details>
     </div>
   </aside>
