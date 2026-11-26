@@ -1,80 +1,82 @@
-# Caudalímetro en la descarga de un reservorio con bajada a 45° (3D)
+# Flowmeter at a reservoir outlet with a 45° drop (3D)
 
-Simulación 3D en dos casos, seleccionables en la página:
+*English · [Español](README.es.md)*
 
-- **Caso 1 (Fase 1):** por qué un caudalímetro electromagnético instalado en la salida
-  horizontal de un reservorio, antes de una bajada pronunciada, no mide bien.
-- **Caso 2 (Fase 2):** el mismo sensor en un **cuello de cisne**, que lo mantiene siempre
-  lleno y mide correctamente.
+A 3D simulation with two cases you can switch between on the page:
 
-Enlaces directos: `#caso1` y `#caso2` al final de la URL.
+- **Case 1 (Phase 1):** why an electromagnetic flowmeter installed on the horizontal outlet
+  of a reservoir, just before a steep drop, does not measure correctly.
+- **Case 2 (Phase 2):** the same sensor in a **gooseneck**, which keeps it always full so it
+  measures correctly.
 
-**Ver en línea:** https://andyrcc.github.io/simulacion-reservorio-3d/
+Direct links: add `#caso1` or `#caso2` to the end of the URL.
 
-## Cómo abrirla
+**Live:** https://andyrcc.github.io/simulacion-reservorio-3d/ (the interface is in Spanish)
 
-- **Sin instalar nada:** ejecuta `py build.py` y abre con doble clic
-  `dist/simulacion_fase1_3d.html` (~20 MB, todo embebido: Three.js, cielo HDRI y
-  texturas; funciona sin internet).
-- **Versión de desarrollo** (código separado en `js/`): sirve la carpeta y abre `index.html`.
+## How to open it
+
+- **Without installing anything:** run `py build.py` and double-click
+  `dist/simulacion_fase1_3d.html` (~20 MB, everything embedded: Three.js, HDRI sky and
+  textures; works offline).
+- **Development version** (code split into `js/`): serve the folder and open `index.html`.
 
   ```powershell
   py -m http.server 8765
   ```
 
-  Luego abre http://localhost:8765/index.html. Después de editar `js/`, ejecuta
-  `py build.py` para regenerar el HTML único.
+  Then open http://localhost:8765/index.html. After editing `js/`, run `py build.py` to
+  regenerate the single HTML file.
 
-## Qué calcula (hidráulica 1D real, no curvas a mano)
+## What it computes (real 1D hydraulics, not hand-drawn curves)
 
-| Situación | Modelo |
+| Situation | Model |
 |---|---|
-| Nivel bajo (entrada no sumergida) | Remanso **H2** subcrítico desde la profundidad crítica en el quiebre al codo (Manning + energía específica) |
-| Nivel alto (entrada sumergida, arista viva) | **Vena contracta** (Cc = 0.62) → chorro **supercrítico H3**; el aire entra por la descarga y la tubería no se presuriza (flujo “tipo 5” de alcantarillas) |
-| Bajada | Perfil **S2** supercrítico con presión y·cos φ |
-| Caudal | El menor entre control de salida (H2/presión + pérdida de entrada Ke = 0.5) y control de entrada (orificio) |
-| Caudalímetro | Q_ind = v · A_llena → **sobre-lectura** ≈ A_llena / A_mojada con ruido; señal errática si los electrodos (3 y 9 en punto) quedan en aire; salida 0 si el EPD está activo |
+| Low level (inlet not submerged) | Subcritical **H2** backwater curve from critical depth at the grade break at the elbow (Manning + specific energy) |
+| High level (submerged sharp-edged inlet) | **Vena contracta** (Cc = 0.62) → **supercritical H3** jet; air enters through the outlet and the pipe never pressurizes (culvert "type 5" flow) |
+| Drop | Supercritical **S2** profile with pressure y·cos φ |
+| Flow rate | The smaller of outlet control (H2/pressure + entrance loss Ke = 0.5) and inlet control (orifice) |
+| Flowmeter | Q_ind = v · A_full → **over-reading** ≈ A_full / A_wetted, with noise; erratic signal if the electrodes (at 3 and 9 o'clock) are in air; zero output if empty-pipe detection (EPD) is active |
 
-Geometría: DN80 a DN400 seleccionable (bridas EN 1092-1 PN16, largo del caudalímetro
-según ISO 13359), 4 m horizontales, caudalímetro a 2 m de la salida, codo de radio largo
-(2D, mínimo 0.35 m). Constantes en `js/hydraulics.js` (`GEOM`, `DN_TABLE`).
-`test-hidraulica.html` imprime una tabla de verificación de la física.
+Geometry: selectable DN80 to DN400 (EN 1092-1 PN16 flanges, flowmeter length per
+ISO 13359), 4 m horizontal run, flowmeter 2 m from the outlet, long-radius elbow (2D,
+minimum 0.35 m). Constants are in `js/hydraulics.js` (`GEOM`, `DN_TABLE`).
+`test-hidraulica.html` prints a table that checks the physics.
 
-## Equipo modelado
+## Modeled equipment
 
-Caudalímetro electromagnético **ISOMAG**: sensor bridado **MS2500** (cuerpo verde, liner
-PTFE, caja de bornes) con convertidor a baterías **MV145** en montaje compacto (tapa
-ahumada abatible, display con caudal, totalizador y tendencia, teclas, tapa de baterías y
-prensaestopas). Modelo 3D propio hecho a partir de las fotos del fabricante; la carcasa del
-sensor lleva una ventana de corte para ver el agua.
+**ISOMAG** electromagnetic flowmeter: **MS2500** flanged sensor (green body, PTFE liner,
+terminal box) with an **MV145** battery-powered converter in compact mount (smoked hinged
+cover, display with flow rate, totalizer and trend, keys, battery cover and cable glands).
+The 3D model is my own, built from the manufacturer's photos; the sensor housing has a
+cutaway window so you can see the water.
 
-## Archivos
+## Files
 
-- `js/hydraulics.js` — física 1D y tabla de DN · `js/sensor.js` — modelo del caudalímetro
-- `js/flowmeter.js` — modelo 3D MS2500 + MV145 · `js/pipeline.js` — tubería, bridas, apoyos, cámara
-- `js/scene.js` — renderer PBR, HDRI con sol orientado, materiales, reservorio
-- `js/terrain.js` — relieve y mezcla pasto/suelo/grava · `js/branding.js` — placa y letrero con el logo
-- `js/water.js` — agua, espuma, burbujas, aire · `js/ui.js` — gráficos 2D y LCD · `js/main.js` — integración
+- `js/hydraulics.js` — 1D physics and DN table · `js/sensor.js` — flowmeter model
+- `js/flowmeter.js` — MS2500 + MV145 3D model · `js/pipeline.js` — pipe, flanges, supports, camera
+- `js/scene.js` — PBR renderer, HDRI with an oriented sun, materials, reservoir
+- `js/terrain.js` — terrain relief and grass/soil/gravel blending · `js/branding.js` — plate and sign with the logo
+- `js/water.js` — water, foam, bubbles, air · `js/ui.js` — 2D charts and LCD · `js/main.js` — puts it all together
 
-## Créditos
+## Credits
 
 - Three.js r160 (MIT) — `vendor/`
-- De Poly Haven (CC0): cielo HDRI *kloofendal_38d_partly_cloudy_puresky*; texturas
-  *preconcrete_wall_001*, *gravel_ground_01*, *leafy_grass* y *excavated_soil_wall*
-- Mapa normal de agua: ejemplos de three.js (MIT)
-- ISOMAG, MS2500 y MV145 son marcas/modelos de ISOIL Industria; se representan solo como
-  referencia del equipo instalado.
+- From Poly Haven (CC0): HDRI sky *kloofendal_38d_partly_cloudy_puresky*; textures
+  *preconcrete_wall_001*, *gravel_ground_01*, *leafy_grass* and *excavated_soil_wall*
+- Water normal map: three.js examples (MIT)
+- ISOMAG, MS2500 and MV145 are brands/models of ISOIL Industria; they appear only as a
+  reference for the installed equipment.
 
-## Caso 2: cuello de cisne
+## Case 2: gooseneck
 
-Salida → codo hacia abajo → **tramo bajo con el sensor** (5D rectos aguas arriba, 3D aguas
-abajo) → montante → **cresta** con **ventosa / rompe-vacío** → codo θ → bajada.
+Outlet → elbow down → **low section with the sensor** (5D straight upstream, 3D
+downstream) → riser → **crest** with an **air valve / vacuum breaker** → θ elbow → drop.
 
-- La clave del sensor queda ≥ 0.25 m bajo el fondo de la cresta: el tramo bajo no puede
-  vaciarse y va **siempre lleno, a presión**.
-- El control crítico pasa a la cresta; el aire que entra por la descarga solo llega hasta
-  ella y la ventosa lo evacúa (y evita el sifonamiento).
-- Modelo: pozo libre aguas arriba, tramo a presión con Manning + K = 0.25 por codo,
-  profundidad crítica en el quiebre de la cresta y perfil S2 en la bajada.
-- Costo: pérdida de carga adicional; con el mismo nivel pasa entre 10 y 25 % menos caudal
-  (la página lo muestra para cada DN y nivel).
+- The crown of the sensor section sits at least 0.25 m below the invert at the crest: the
+  low section cannot drain and runs **always full, under pressure**.
+- Critical control moves to the crest; air that enters through the outlet only gets as far
+  as the crest, where the air valve releases it (and prevents siphoning).
+- Model: free-surface reservoir upstream, pressurized section with Manning + K = 0.25 per
+  elbow, critical depth at the crest break and an S2 profile on the drop.
+- Cost: extra head loss; at the same level, 10–25% less flow gets through (the page shows
+  it for each DN and level).
